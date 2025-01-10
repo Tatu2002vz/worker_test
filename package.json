@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsx guiCli.ts",
+    "start": "node guiCli.js",
+    "start1": "npx tsx guiCli.ts",
     "setup": "npm install && npm install -g pm2 && node manageProcess.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

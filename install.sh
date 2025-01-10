@@ -21,9 +21,16 @@ else
   echo "Unsupported operating system."
   exit -1
 fi
+
+# Cài đặt nvm và Node.js
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-source ~/.nvm/nvm.sh
+export NVM_DIR="$HOME/.nvm"
+source "$NVM_DIR/nvm.sh"
 nvm install 22
+
+# Cập nhật PATH
+export PATH="$NVM_DIR/versions/node/v22/bin:$PATH"
+
 # Chạy npm install và npm install -g pm2
 npm install
 npm install -g pm2

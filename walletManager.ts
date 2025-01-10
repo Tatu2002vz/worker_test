@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import Web3 from "web3";
+const Web3 = require("web3");
 import Keyring from "@polkadot/keyring";
 import { hexToU8a, stringToU8a, u8aToHex } from "@polkadot/util";
 import * as peaqDidProtoJs from "peaq-did-proto-js";
@@ -7,7 +7,7 @@ import { cryptoWaitReady } from "@polkadot/util-crypto";
 import axios from "axios";
 import { Sdk } from "@peaq-network/sdk";
 import "dotenv/config";
-import env from "./env.json";
+const env = require("./env.json");
 
 class WalletManager {
   private web3;

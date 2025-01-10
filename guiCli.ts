@@ -1,8 +1,8 @@
 /* eslint-disable func-names */
 // import Web3 from 'web3';
 import fs from "fs";
-import readline from "readline";
-import storage from "node-persist";
+const readline = require("readline");
+const storage = require("node-persist");
 import WalletManager from "./walletManager";
 
 const walletManager = new WalletManager();
@@ -91,9 +91,8 @@ function printKaisarLogo(): void {
   console.log("Welcome to Kaisar Wallet CLI!! ");
   console.log("1. Create a new wallet");
   console.log("2. Import existing wallet");
-  console.log("3. Get DID");
-  console.log("4. View balance wallet");
-  console.log("5. View system information");
+  console.log("3. Register device");
+  console.log("4. Check status");
   console.log(
     "**********************************************************************************************"
   );
@@ -108,7 +107,9 @@ async function handleCommand(input: string): Promise<boolean> {
     case "1": {
       const exist = await checkExist();
       if (exist) {
-        console.log("Wallet already exists");
+        console.log(
+          "A wallet already exists. Please proceed with a different option."
+        );
         break;
       }
       const rs = await walletManager.createWallet();
@@ -116,6 +117,9 @@ async function handleCommand(input: string): Promise<boolean> {
         console.log("Create new wallet success!");
         console.log("Address: ", rs.address);
         console.log("Private Key: ", rs.privateKey);
+        console.log(
+          "Please make sure to securely store your private key. You will need it to import your wallet in the future."
+        );
         // const filePath = 'wallets.json';
 
         // let wallets: Wallet[] = [];
@@ -139,18 +143,20 @@ async function handleCommand(input: string): Promise<boolean> {
     case "2": {
       const exist = await checkExist();
       if (exist) {
-        console.log("Wallet already exists");
+        console.log(
+          "A wallet already exists. Please proceed with a different option."
+        );
         break;
       }
-    
+
       console.log("Please input private key to import wallet!");
-    
+
       const privateKey = await new Promise<string>((resolve) => {
         rl.question("Private Key: ", (input) => {
           resolve(input);
         });
       });
-    
+
       try {
         const rs = await walletManager.importWallet(privateKey);
         if (rs?.address && rs.privateKey) {
@@ -168,26 +174,24 @@ async function handleCommand(input: string): Promise<boolean> {
       }
       break;
     }
-    
+
     case "3": {
-      const did = "test-did-1234";
-      await storage.setItem("did", did);
-      console.log("Your DID: ", did);
+      console.log("Register device!!");
       break;
     }
     case "4": {
-      try {
-        const rs = await storage.getItem("wallet");
-        const balance = await walletManager.getBalnce(rs.address);
-        console.log(
-          "Balance: ",
-          this.web3.utils.fromWei(balance, "ether"),
-          "ETH"
-        );
-
-      } catch (error) {
-        console.log('Error: ', error)
-      }
+      const wallet = await storage.getItem("wallet");
+      const { address } = wallet;
+      console.log("Address: ", address);
+      const email = await storage.getItem("email");
+      console.log("Email: ", email);
+      const peaqDID = await storage.getItem("PeaqDID");
+      console.log("Peaq DID: ", peaqDID);
+      const resource = await storage.getItem("resource");
+      const systemStatus = await storage.getItem("system-status");
+      const dockerStatus = await storage.getItem("docker");
+      const data = { ...resource, ...systemStatus, ...dockerStatus };
+      console.log("Spect: ", data);
       break;
     }
     case "5": {
@@ -201,9 +205,9 @@ async function handleCommand(input: string): Promise<boolean> {
           readline.clearScreenDown(process.stdout); // Xóa màn hình sau con trỏ
           // process.stdout.write('\x1Bc');
           const resource = await storage.getItem("resource");
-          console.log("resource: ", resource);
+          console.log("Resource: ", resource);
           const systemStatus = await storage.getItem("system-status");
-          console.log("system status: ", systemStatus);
+          console.log("System status: ", systemStatus);
         }, 2000);
       }
       break;
@@ -219,9 +223,10 @@ async function handleCommand(input: string): Promise<boolean> {
 async function start(): Promise<void> {
   const networkId = await walletManager.isConnected();
   console.log(`Connected to network with ID: ${networkId}`);
-
-  printKaisarLogo();
+  let count = 0;
   function askQuestion(): void {
+    if (count % 2 === 0) printKaisarLogo();
+    count++;
     rl.question("Enter your input command: ", async (input: string) => {
       if (input === "exit") {
         console.log("Exiting the program.");
