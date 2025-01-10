@@ -1,0 +1,37 @@
+{
+  "name": "middleware",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "npx tsx guiCli.ts",
+    "setup": "npm install && npm install -g pm2 && node manageProcess.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@peaq-network/sdk": "^0.7.2",
+    "axios": "^1.7.9",
+    "check-disk-space": "^3.4.0",
+    "child_process": "^1.0.2",
+    "dockerode": "^4.0.2",
+    "fs": "^0.0.1-security",
+    "geoip-lite": "^1.4.10",
+    "inquirer": "^6.0.0",
+    "ip": "^2.0.1",
+    "os": "^0.1.2",
+    "os-utils": "^0.0.14",
+    "path": "^0.12.7",
+    "pm2": "^5.4.3",
+    "socket.io-client": "^4.7.5",
+    "systeminformation": "^5.22.11",
+    "typescript": "^5.7.3",
+    "web3": "^1.10.4",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "network-speed": "^2.1.1",
+    "node-persist": "^4.0.3"
+  }
+}
