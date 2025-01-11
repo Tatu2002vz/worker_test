@@ -8,9 +8,12 @@ const { logMessage } = require("./src/utill/util");
 const WebSocketClient = require("./src/utill/socket.js");
 const { EventNameSocket } = require("./src/utill/enum.js");
 const docker = require("./src/utill/docker.js");
+const env = require('./env.json')
 
 storage.initSync({ dir: "./data" });
 const socket = new WebSocketClient();
+
+
 
 const verifyWorker = async () => {
   // Lắng nghe sự kiện BenchMarkTask
@@ -27,7 +30,7 @@ const verifyWorker = async () => {
       );
       await logMessage("benchmark-task-receive: ", data);
       const benchMark = await system.benchMarkTask();
-      await logMessage("benchmark-task-send: ", { ...benchMark, gpu: "gpu" });
+      await logMessage("benchmark-task-send: ", { ...benchMark });
 
       // if (benchMark) benchMark.gpu = gpu;
       await socket.send(EventNameSocket.BenchMarkTaskResult, benchMark);
@@ -62,7 +65,7 @@ const systemStatus = async () => {
   }, 1000);
 };
 const startSystemMonitoring = async () => {
-  const intervalTime = Number(process.env.TIME_INTERVAL) || 30000;
+  const intervalTime = Number(env.TIME_INTERVAL) || 30000;
   setInterval(async () => {
     try {
       await logMessage("system usage!");
@@ -95,7 +98,7 @@ const createGPUContainer = async () => {
 };
 
 const queryOrder = async () => {
-  const intervalTime = Number(process.env.TIME_INTERVAL) || 30000;
+  const intervalTime = Number(env.TIME_INTERVAL) || 30000;
   setInterval(async () => {
     if (!todo) {
       try {

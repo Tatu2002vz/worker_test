@@ -3,6 +3,7 @@ const geoip = require('geoip-lite');
 const checkDiskSpace = require('check-disk-space');
 // eslint-disable-next-line import/no-extraneous-dependencies
 const NetworkSpeed = require('network-speed');
+const puppeteer = require('puppeteer')
 
 const path = require('path');
 const si = require('systeminformation');
@@ -186,36 +187,14 @@ async function getSystemInfo() {
   }
 }
 
-// // -----------------
-// function delay(timeoutInMilliseconds: number) {
-//   return new Promise<void>((resolve) => {
-//     setTimeout(() => {
-//       resolve();
-//     }, timeoutInMilliseconds);
-//   });
-// }
-// const gpuFPS = async () => {
-//   const browser = await puppeteer.launch({ headless: true });
-//   const page = await browser.newPage();
-
-//   await page.goto('https://pmndrs.github.io/detect-gpu/', { waitUntil: 'domcontentloaded', timeout: 300000 });
-//   await page.waitForSelector('#root', { timeout: 5000 });
-//   await delay(1000);
-//   // eslint-disable-next-line consistent-return
-//   const gpuData = await page.evaluate(() => {
-//     if (document && document.getElementById('root')) {
-//       return document.getElementById('root')?.innerText;
-//     }
-//   });
-//   let gpuInfo;
-//   try {
-//     gpuInfo = JSON.parse(gpuData || '');
-//   } catch (error) {
-//     console.error('Error parsing GPU data:', error);
-//   }
-//   await browser.close();
-//   return gpuInfo;
-// };
+// -----------------
+function delay(timeoutInMilliseconds) {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve();
+    }, timeoutInMilliseconds);
+  });
+}
 
 async function getIPAddress() {
   try {
@@ -304,7 +283,27 @@ const getNetworkUploadSpeed = async () => {
   const speed = await testNetworkSpeed.checkUploadSpeed(options, fileSizeInBytes);
   return speed;
 };
+const gpuFPS = async () => {
+  const browser = await puppeteer.launch({ headless: 'new' });
+  const page = await browser.newPage();
 
+  await page.goto('https://pmndrs.github.io/detect-gpu/', { waitUntil: 'domcontentloaded', timeout: 300000 });
+  await page.waitForSelector('#root', { timeout: 5000 });
+  await delay(1000)
+  const gpuData = await page.evaluate(() => {
+      return document.getElementById('root').innerText;
+  });
+  let gpuInfo;
+  try {
+      gpuInfo = JSON.parse(gpuData);
+  } catch (error) {
+      console.error('Error parsing GPU data:', error);
+  }
+  await browser.close();
+  console.log(gpuInfo)
+  return gpuInfo;
+};
+gpuFPS();
 // eslint-disable-next-line consistent-return
 const benchMarkTask = async () => {
   try {
@@ -315,13 +314,7 @@ const benchMarkTask = async () => {
     const dSpeed = await getNetworkDownloadSpeed();
     const gpu = await getGPU();
     const benchMarkData = {
-      gpu: {
-        fps: gpu.gpuDisplay?.currentRefreshRate || 60,
-        gpu: JSON.stringify(gpu.gpus),
-        isMobile: false,
-        tier: 0,
-        type: 'BENCHMARK'
-      },
+      gpu: await gpuFPS(),
       network: {
         upload: uSpeed,
         download: dSpeed

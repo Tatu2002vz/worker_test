@@ -1,9 +1,10 @@
 /* eslint-disable func-names */
 // import Web3 from 'web3';
-import fs from "fs";
 const readline = require("readline");
 const storage = require("node-persist");
 import WalletManager from "./walletManager";
+const axios = require("axios");
+const env = require("./env.json");
 
 const walletManager = new WalletManager();
 storage.initSync({ dir: "./data" });
@@ -20,31 +21,6 @@ const rl = readline.createInterface({
   prompt: "> ",
 });
 
-// function createWallet(): void {
-//   try {
-//     console.log(`Creating new wallet...`);
-
-//     const wallet = web3.eth.accounts.create();
-//     console.log('Address:', wallet.address);
-//     console.log('Private Key:', wallet.privateKey);
-
-//     const filePath = 'wallets.json';
-
-//     let wallets: Wallet[] = [];
-//     if (fs.existsSync(filePath)) {
-//       const data = fs.readFileSync(filePath);
-//       wallets = JSON.parse(data.toString());
-//     }
-
-//     wallets.push(wallet);
-
-//     fs.writeFileSync(filePath, JSON.stringify(wallets, null, 2));
-
-//     console.log('Wallet saved to file');
-//   } catch (error: any) {
-//     console.log('Error creating wallet:', error.message);
-//   }
-// }
 async function checkExist() {
   const rs = await storage.getItem("wallet");
   // console.log(rs)
@@ -98,6 +74,11 @@ function printKaisarLogo(): void {
   );
 }
 
+function validateEmail(email) {
+  const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  return regex.test(email);
+}
+
 async function handleCommand(input: string): Promise<boolean> {
   const parts = input.split(" ");
   const command = parts[0];
@@ -120,17 +101,6 @@ async function handleCommand(input: string): Promise<boolean> {
         console.log(
           "Please make sure to securely store your private key. You will need it to import your wallet in the future."
         );
-        // const filePath = 'wallets.json';
-
-        // let wallets: Wallet[] = [];
-        // if (fs.existsSync(filePath)) {
-        //   const data = fs.readFileSync(filePath);
-        //   wallets = JSON.parse(data.toString());
-        // }
-
-        // wallets.push({ address: rs.address, privateKey: rs.privateKey });
-
-        // fs.writeFileSync(filePath, JSON.stringify(wallets, null, 2));
         await storage.setItem("wallet", {
           address: rs.address,
           privateKey: btoa(rs.privateKey),
@@ -176,7 +146,38 @@ async function handleCommand(input: string): Promise<boolean> {
     }
 
     case "3": {
-      console.log("Register device!!");
+      try {
+        const exploerAPI = env.EXPLOER_API;
+        let email = await storage.getItem("email");
+        if (email) {
+          console.log("Your email is: ", email);
+        } else {
+          console.log("Please enter your email to continue.");
+          email = await new Promise<string>((resolve) => {
+            rl.question("Email: ", (input) => {
+              resolve(input);
+            });
+          });
+        }
+        const testEmail = validateEmail(email);
+        if (!testEmail) console.log("Please enter a valid email address.");
+        else {
+          const wallet = await storage.getItem("wallet");
+          const dataPost = {
+            email,
+            address: wallet.address,
+            tag: "kaisar_worker",
+          };
+          const rs = await axios.post(exploerAPI, dataPost, {
+            headers: {
+              "x-api-key": env.X_API_KEY,
+            },
+          });
+          console.log("result: ", rs);
+        }
+      } catch (error) {
+        console.log("Error when register device! ", error);
+      }
       break;
     }
     case "4": {

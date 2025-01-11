@@ -38,22 +38,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 Object.defineProperty(exports, "__esModule", { value: true });
 /* eslint-disable import/no-extraneous-dependencies */
 var Web3 = require("web3");
-var keyring_1 = require("@polkadot/keyring");
-var util_1 = require("@polkadot/util");
-var peaqDidProtoJs = require("peaq-did-proto-js");
-var util_crypto_1 = require("@polkadot/util-crypto");
-var axios_1 = require("axios");
-var sdk_1 = require("@peaq-network/sdk");
-require("dotenv/config");
 var env = require("./env.json");
 var WalletManager = /** @class */ (function () {
     function WalletManager() {
         this.peaq_service_url = env.PEAQ_SERVICE_URL;
-        this.api_key = env.API_KEY;
-        this.project_api_key = env.PROJECT_API_KEY;
-        this.owner_seed = env.MNEMONIC;
-        this.did_subject_sedd = env.MNEMONIC;
-        this.depin_seed = env.MNEMONIC;
         this.web3 = new Web3(env.HTTP_PROVIDER);
     }
     // Kiểm tra kết nối mạng
@@ -104,115 +92,101 @@ var WalletManager = /** @class */ (function () {
             return null;
         }
     };
-    WalletManager.prototype.createEmailSignature = function (data) {
-        return __awaiter(this, void 0, void 0, function () {
-            var response, error_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        _a.trys.push([0, 2, , 3]);
-                        return [4 /*yield*/, axios_1.default.post("".concat(this.peaq_service_url, "/v1/sign"), data, {
-                                headers: {
-                                    "Content-Type": "application/json",
-                                    Accept: "application/json",
-                                    APIKEY: this.api_key,
-                                    "P-APIKEY": this.project_api_key,
-                                },
-                            })];
-                    case 1:
-                        response = _a.sent();
-                        // Note: You may need to adjust the response handling based on the service's response structure
-                        console.log(response.data);
-                        return [2 /*return*/, response.data.data.signature];
-                    case 2:
-                        error_2 = _a.sent();
-                        console.error("Error creating email signature", error_2.response);
-                        throw error_2;
-                    case 3: return [2 /*return*/];
-                }
-            });
-        });
-    };
-    WalletManager.prototype.createDid = function (walletAddress, email) {
-        return __awaiter(this, void 0, void 0, function () {
-            var keyring, OwnerPair, DIDSubjectPair, DePinPair, DIDAddress, postdata, emailSignature, signature, did, bytes, document_1, error_3;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, (0, util_crypto_1.cryptoWaitReady)()];
-                    case 1:
-                        _a.sent();
-                        console.log("before use sdk 106!!");
-                        keyring = new keyring_1.default({ type: "sr25519" });
-                        OwnerPair = keyring.addFromUri(this.owner_seed);
-                        console.log("keyring:: ", OwnerPair);
-                        DIDSubjectPair = keyring.addFromUri(this.did_subject_sedd);
-                        DePinPair = keyring.addFromUri(this.depin_seed);
-                        console.log("before use sdk 114!!");
-                        DIDAddress = DIDSubjectPair.address;
-                        console.log(DIDAddress);
-                        postdata = {
-                            email: email,
-                            did_address: DIDAddress,
-                            tag: "TEST", // replace with your unique custom task tag
-                        };
-                        return [4 /*yield*/, this.createEmailSignature(postdata)];
-                    case 2:
-                        emailSignature = _a.sent();
-                        signature = (0, util_1.u8aToHex)(DePinPair.sign((0, util_1.stringToU8a)(DIDAddress)));
-                        _a.label = 3;
-                    case 3:
-                        _a.trys.push([3, 5, , 6]);
-                        console.log({
-                            address: walletAddress,
-                        });
-                        console.log("customDocumentFields", {
-                            services: [
-                                {
-                                    id: "#emailSignature",
-                                    type: "emailSignature",
-                                    data: emailSignature,
-                                },
-                            ],
-                            signature: {
-                                type: "Ed25519VerificationKey2020",
-                                hash: signature,
-                                issuer: DePinPair.address, // The issuer is DePin
-                            },
-                        });
-                        console.log("before use sdk!!");
-                        return [4 /*yield*/, sdk_1.Sdk.generateDidDocument({
-                                address: walletAddress,
-                                customDocumentFields: {
-                                    services: [
-                                        {
-                                            id: "#emailSignature",
-                                            type: "emailSignature",
-                                            data: emailSignature,
-                                        },
-                                    ],
-                                    signature: {
-                                        type: "Ed25519VerificationKey2020",
-                                        hash: signature,
-                                        issuer: DePinPair.address,
-                                    },
-                                },
-                            })];
-                    case 4:
-                        did = _a.sent();
-                        console.log("after use sdk!!");
-                        bytes = (0, util_1.hexToU8a)(did === null || did === void 0 ? void 0 : did.value);
-                        document_1 = peaqDidProtoJs.Document.deserializeBinary(bytes);
-                        console.log("document: ", document_1.toObject());
-                        return [2 /*return*/, did];
-                    case 5:
-                        error_3 = _a.sent();
-                        console.error("DID Creation Error:", error_3);
-                        return [2 /*return*/, null];
-                    case 6: return [2 /*return*/];
-                }
-            });
-        });
-    };
+    // async createEmailSignature(data: any) {
+    //   try {
+    //     const response = await axios.post(
+    //       `${this.peaq_service_url}/v1/sign`,
+    //       data,
+    //       {
+    //         headers: {
+    //           "Content-Type": "application/json",
+    //           Accept: "application/json",
+    //           APIKEY: this.api_key,
+    //           "P-APIKEY": this.project_api_key,
+    //         },
+    //       }
+    //     );
+    //     // Note: You may need to adjust the response handling based on the service's response structure
+    //     console.log(response.data);
+    //     return response.data.data.signature;
+    //   } catch (error: any) {
+    //     console.error("Error creating email signature", error.response);
+    //     throw error;
+    //   }
+    // }
+    // async createDid(walletAddress: string, email: string) {
+    //   await cryptoWaitReady();
+    //   console.log("before use sdk 106!!");
+    //   const keyring = new Keyring({ type: "sr25519" });
+    //   // Creating key pair for the owner  of the subject  from seed
+    //   const OwnerPair = keyring.addFromUri(this.owner_seed);
+    //   console.log("keyring:: ", OwnerPair);
+    //   // Creating key pair for the subject of the DID from seed
+    //   const DIDSubjectPair = keyring.addFromUri(this.did_subject_sedd);
+    //   // Creating key pair for the DePin from seed
+    //   const DePinPair = keyring.addFromUri(this.depin_seed);
+    //   console.log("before use sdk 114!!");
+    //   // Address derived from DIDSubjectPair
+    //   const DIDAddress = DIDSubjectPair.address;
+    //   console.log(DIDAddress);
+    //   // Signer Address derived from OwnerPair
+    //   // const signerAddress = OwnerPair.address;
+    //   // Email address signature will be  created and did address will be used to track the creator
+    //   const postdata = {
+    //     email,
+    //     did_address: DIDAddress,
+    //     tag: "TEST", // replace with your unique custom task tag
+    //   };
+    //   const emailSignature = await this.createEmailSignature(postdata); // Creating email  signature
+    //   // Initializing SDK instance with DIDSubjectSeed
+    //   // Generating signature using DePinSeed and DIDSubjectPair's address as data
+    //   const signature = u8aToHex(DePinPair.sign(stringToU8a(DIDAddress)));
+    //   try {
+    //     console.log({
+    //       address: walletAddress,
+    //     });
+    //     console.log("customDocumentFields", {
+    //       services: [
+    //         {
+    //           id: "#emailSignature",
+    //           type: "emailSignature",
+    //           data: emailSignature,
+    //         },
+    //       ],
+    //       signature: {
+    //         type: "Ed25519VerificationKey2020",
+    //         hash: signature,
+    //         issuer: DePinPair.address, // The issuer is DePin
+    //       },
+    //     });
+    //     console.log("before use sdk!!");
+    //     const did = await Sdk.generateDidDocument({
+    //       address: walletAddress,
+    //       customDocumentFields: {
+    //         services: [
+    //           {
+    //             id: "#emailSignature",
+    //             type: "emailSignature",
+    //             data: emailSignature,
+    //           },
+    //         ],
+    //         signature: {
+    //           type: "Ed25519VerificationKey2020",
+    //           hash: signature,
+    //           issuer: DePinPair.address,
+    //         },
+    //       },
+    //     });
+    //     console.log("after use sdk!!");
+    //     const bytes = hexToU8a(did?.value as unknown as string);
+    //     const document = peaqDidProtoJs.Document.deserializeBinary(bytes);
+    //     console.log("document: ", document.toObject());
+    //     return did;
+    //   } catch (error) {
+    //     console.error("DID Creation Error:", error);
+    //     return null;
+    //   }
+    // }
     WalletManager.prototype.getBalnce = function (address) {
         return __awaiter(this, void 0, void 0, function () {
             var balance;

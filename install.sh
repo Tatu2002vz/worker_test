@@ -12,24 +12,20 @@ if [[ -n $(find /etc -name "redhat-release") ]] || grep </proc/version -q -i "ce
   yum install -y epel-release
   yum install -y gcc-c++ curl
 elif grep </etc/issue -q -i "debian" && [[ -f "/etc/issue" ]] || grep </proc/version -q -i "debian"; then
-  apt-get update
-  apt-get install -y g++ curl
+  apt update -y
+  apt install -y g++ curl
 elif grep </etc/issue -q -i "ubuntu" && [[ -f "/etc/issue" ]] || grep </proc/version -q -i "ubuntu"; then
-  apt-get update
-  apt-get install -y g++ curl
+  apt update -y
+  apt install -y g++ curl
 else
   echo "Unsupported operating system."
   exit -1
 fi
 
-# Cài đặt nvm và Node.js
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
-export NVM_DIR="$HOME/.nvm"
-source "$NVM_DIR/nvm.sh"
-nvm install 22
-
-# Cập nhật PATH
-export PATH="$NVM_DIR/versions/node/v22/bin:$PATH"
+# Cài đặt Nodejs và npm
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo bash -
+sudo apt update -y
+sudo apt install nodejs -y
 
 # Chạy npm install và npm install -g pm2
 npm install

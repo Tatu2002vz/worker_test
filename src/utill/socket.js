@@ -1,9 +1,8 @@
 const io = require('socket.io-client');
-require('dotenv').config(); // Để sử dụng biến môi trường
-
+const env = require('../../env.json')
 class WebSocketClient {
   constructor() {
-    this.url = process.env.SOCKET_URL;
+    this.url = env.SOCKET_URL;
     this.socket = null;
     this.onConnectPromise = null;
     this.onConnectResolve = null;
@@ -16,9 +15,9 @@ class WebSocketClient {
     });
 
     this.socket = io(this.url, {
-      path: process.env.SOCKET_PATH,
+      path: env.SOCKET_PATH,
       extraHeaders: {
-        authorization: process.env.JWT_TOKEN
+        authorization: env.JWT_TOKEN
       }
     });
 
