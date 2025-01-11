@@ -3,14 +3,14 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 /* eslint-disable import/no-extraneous-dependencies */
 const storage = require("node-persist");
-const system = require("./src/utill/system.js");
-const { logMessage } = require("./src/utill/util");
-const WebSocketClient = require("./src/utill/socket.js");
-const { EventNameSocket } = require("./src/utill/enum.js");
-const docker = require("./src/utill/docker.js");
-const env = require('./env.json')
+const system = require("./utill/system.js");
+const { logMessage } = require("./utill/util.js");
+const WebSocketClient = require("./utill/socket.js");
+const { EventNameSocket } = require("./utill/enum.js");
+const docker = require("./utill/docker.js");
+const env = require('../env.json')
 
-storage.initSync({ dir: "./data" });
+storage.initSync({ dir: "src/.data" });
 const socket = new WebSocketClient();
 
 

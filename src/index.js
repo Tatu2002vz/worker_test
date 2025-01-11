@@ -2,18 +2,12 @@
 // import Web3 from 'web3';
 const readline = require("readline");
 const storage = require("node-persist");
-import WalletManager from "./walletManager";
+const WalletManager = require("./utill/wallet");
 const axios = require("axios");
-const env = require("./env.json");
+const env = require("../env.json");
 
 const walletManager = new WalletManager();
-storage.initSync({ dir: "./data" });
-// const web3 = new Web3('https://wss-async.agung.peaq.network/');
-
-interface Wallet {
-  address: string;
-  privateKey: string;
-}
+storage.initSync({ dir: "src/.data" });
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -23,14 +17,13 @@ const rl = readline.createInterface({
 
 async function checkExist() {
   const rs = await storage.getItem("wallet");
-  // console.log(rs)
-  if (rs && rs.address && rs.privateKey) {
+  if (rs && rs.address) {
     return true;
   }
   return false;
 }
 
-function printKaisarLogo(): void {
+function printKaisarLogo() {
   console.log(
     "**********************************************************************************************"
   );
@@ -75,11 +68,11 @@ function printKaisarLogo(): void {
 }
 
 function validateEmail(email) {
-  const regex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
+  const regex = /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/;
   return regex.test(email);
 }
 
-async function handleCommand(input: string): Promise<boolean> {
+async function handleCommand(input) {
   const parts = input.split(" ");
   const command = parts[0];
   let intervalFlag = false;
@@ -93,7 +86,14 @@ async function handleCommand(input: string): Promise<boolean> {
         );
         break;
       }
-      const rs = await walletManager.createWallet();
+      console.log("Create a new password for wallet!");
+      const password = await new Promise((resolve) => {
+        rl.question("New Password: ", (input) => {
+          resolve(input);
+        });
+      });
+
+      const rs = await walletManager.createWallet(password);
       if (rs?.address && rs.privateKey) {
         console.log("Create new wallet success!");
         console.log("Address: ", rs.address);
@@ -103,8 +103,9 @@ async function handleCommand(input: string): Promise<boolean> {
         );
         await storage.setItem("wallet", {
           address: rs.address,
-          privateKey: btoa(rs.privateKey),
+          encryptKeyStore: rs.encryptKeyStore,
         });
+        await storage.setItem("passKey", password);
       } else {
         console.log("Create new wallet failed!");
       }
@@ -118,24 +119,30 @@ async function handleCommand(input: string): Promise<boolean> {
         );
         break;
       }
-
+      console.log("Create a new password for wallet!");
+      const password = await new Promise((resolve) => {
+        rl.question("New Password: ", (input) => {
+          resolve(input);
+        });
+      });
       console.log("Please input private key to import wallet!");
 
-      const privateKey = await new Promise<string>((resolve) => {
+      const privateKey = await new Promise((resolve) => {
         rl.question("Private Key: ", (input) => {
           resolve(input);
         });
       });
 
       try {
-        const rs = await walletManager.importWallet(privateKey);
+        const rs = await walletManager.importWallet(privateKey, password);
         if (rs?.address && rs.privateKey) {
           console.log("Import wallet success!");
           console.log("Address: ", rs.address);
           await storage.setItem("wallet", {
             address: rs.address,
-            privateKey: btoa(rs.privateKey),
+            encryptKeyStore: rs.encryptKeyStore,
           });
+          await storage.setItem("passKey", password);
         } else {
           console.log("Import wallet failed!");
         }
@@ -147,34 +154,39 @@ async function handleCommand(input: string): Promise<boolean> {
 
     case "3": {
       try {
-        const exploerAPI = env.EXPLOER_API;
+        const exploerAPI = env.EXPLOER_API + "/kaisar/peaq-did";
+        let testEmail = false;
+        let flag = false;
         let email = await storage.getItem("email");
-        if (email) {
+        if (email && validateEmail(email)) {
           console.log("Your email is: ", email);
         } else {
-          console.log("Please enter your email to continue.");
-          email = await new Promise<string>((resolve) => {
-            rl.question("Email: ", (input) => {
-              resolve(input);
+          do {
+            console.log("Please enter your email to continue.");
+            email = await new Promise((resolve) => {
+              rl.question("Email: ", (input) => {
+                resolve(input);
+              });
             });
-          });
+            await storage.setItem("email", email);
+
+            testEmail = validateEmail(email);
+            if (!testEmail) console.log("Please enter a valid email address.");
+          } while (!testEmail);
         }
-        const testEmail = validateEmail(email);
-        if (!testEmail) console.log("Please enter a valid email address.");
-        else {
-          const wallet = await storage.getItem("wallet");
-          const dataPost = {
-            email,
-            address: wallet.address,
-            tag: "kaisar_worker",
-          };
-          const rs = await axios.post(exploerAPI, dataPost, {
-            headers: {
-              "x-api-key": env.X_API_KEY,
-            },
-          });
-          console.log("result: ", rs);
-        }
+        const wallet = await storage.getItem("wallet");
+        const dataPost = {
+          email,
+          address: wallet.address,
+          tag: "kaisar_worker",
+        };
+        const rs = await axios.post(exploerAPI, dataPost, {
+          headers: {
+            "x-api-key": env.X_API_KEY,
+          },
+        });
+        console.log("result: ", rs.data.data);
+        await storage.setItem("PeaqDID", rs.data.data.value);
       } catch (error) {
         console.log("Error when register device! ", error);
       }
@@ -201,10 +213,8 @@ async function handleCommand(input: string): Promise<boolean> {
 
       if (!intervalId) {
         setInterval(async () => {
-          // console.clear();
-          readline.cursorTo(process.stdout, 0, 0); // Di chuyển con trỏ về đầu dòng
-          readline.clearScreenDown(process.stdout); // Xóa màn hình sau con trỏ
-          // process.stdout.write('\x1Bc');
+          readline.cursorTo(process.stdout, 0, 0); // Move cursor to start
+          readline.clearScreenDown(process.stdout); // Clear screen after cursor
           const resource = await storage.getItem("resource");
           console.log("Resource: ", resource);
           const systemStatus = await storage.getItem("system-status");
@@ -221,14 +231,17 @@ async function handleCommand(input: string): Promise<boolean> {
   return intervalFlag;
 }
 
-async function start(): Promise<void> {
+async function start() {
+  await storage.setItem("docker", "");
+  await storage.setItem("resource", "");
+  await storage.setItem("system-status", "");
   const networkId = await walletManager.isConnected();
   console.log(`Connected to network with ID: ${networkId}`);
   let count = 0;
-  function askQuestion(): void {
+  function askQuestion() {
     if (count % 2 === 0) printKaisarLogo();
     count++;
-    rl.question("Enter your input command: ", async (input: string) => {
+    rl.question("Enter your input command: ", async (input) => {
       if (input === "exit") {
         console.log("Exiting the program.");
         rl.close();
@@ -239,7 +252,6 @@ async function start(): Promise<void> {
       if (!rs) {
         askQuestion();
       }
-      // console.clear();q
     });
   }
 

@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node guiCli.js",
+    "start": "node src/manageProcess.js && node src/index.js",
     "start1": "npx tsx guiCli.ts",
-    "setup": "npm install && npm install -g pm2 && node manageProcess.js",
+    "setup": "npm install && npm install -g pm2",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -16,6 +16,7 @@
     "check-disk-space": "^3.4.0",
     "child_process": "^1.0.2",
     "dockerode": "^4.0.2",
+    "ethers": "^6.13.5",
     "fs": "^0.0.1-security",
     "geoip-lite": "^1.4.10",
     "inquirer": "^6.0.0",

@@ -3,3 +3,5 @@
 # ENV
 .env
 data
+.data
+env.json

@@ -1,72 +1,122 @@
-# Worker Web3 SDK Project
 
-## Description
 
-This project is a middleware application that uses Web3 to interact with smart contracts on the Sepolia network. It also connects to WebSocket services to receive real-time data and handle other information.
+  
 
-## Environment Configuration
+## Installation
 
-To run this project, you need to create a `.env` file in the root directory of your project and add the following environment variables:
+  
 
-## Environment vars
+Step-by-step instructions on how to install and set up the project.
+
+  
+
+1.  **Clone the repository:**
+
+  
+
+2.  **Set up environment variables:** - Create a `env.json` file in the root directory of your project. - Add the required environment variables. For example:
+
+  
+
+````plaintext
+
+{
+
+"PORT": 3005,
+
+"HTTP_PROVIDER": "https://",
+
+"PEAQ_SERVICE_URL": "https://",
+
+"EXPLOER_API": "https://",
+
+"X_API_KEY": "",
+
+"TIME_INTERVAL": 30000,
+
+"SOCKET_URL": "ws://test",
+
+"JWT_TOKEN": "test",
+
+"SOCKET_PATH": "SOCKET_PATH",
+
+"DID_ADDRESS": ""
+
+}
+
+  
+
 ```
-This project uses the following environment variables:
 
-HTTP_PROVIDER=https://example.infura.io/v3/YOUR_INFURA_PROJECT_ID
+````
 
-CONTRACT_ADDRESS_DEVICE_MANAGER=0xYourDeviceManagerContractAddress
+  
 
-CONTRACT_ADDRESS_ORDER_MANAGER=0xYourOrderManagerContractAddress
+3.  **Run The Application**
 
-CONTRACT_ADDRESS_MAIN=0xYourMainContractAddress
+  
+### With Windows:
 
-WALLET_MAIN_ADDRESS=0xYourMainWalletAddress
+  
 
-SOCKET_URL=https://example.com
+* Install nodejs from: https://nodejs.org/en/download
 
-SOCKET_PATH=/path/to/socket.io
-
-JWT_TOKEN=your.jwt.token.here
-```
-
-## Common setup
-
-Clone the repo and install the dependencies.
+  
 
 ```bash
-git clone https://git.x-or.cloud/x-or/worker-web3-sdk
+
+npm  run  setup
+
+npm  start
+
 ```
 
+  
+
+###  With Linux:
+
+  
+
 ```bash
-npm install
+
+sudo  ./install.sh
+
+sudo  ./kaisarWorker
+
+```
+# Files Structures
 ```
 
-## Steps for read-only access
+📦battle_ship
 
-To start the express server, run the following
+┣ 📂src
 
-```bash
-node index.js
-```
+┃ ┣ 📂.data
 
+┃ ┣ 📂enum
 
-## Use Docker
-You can also run this app as a Docker container:
+┃ ┃ ┗ 📜gpu.js
 
-Step 1: Clone the repo
+┃ ┣ 📂util
 
-```bash
-git clone https://git.x-or.cloud/x-or/worker-web3-sdk
-```
+┃ ┃ ┣ 📜docker.js
 
-Step 2: Build the Docker image
+┃ ┃ ┣ 📜enum.js
 
-```bash
-docker build -t workersdk .
-```
+┃ ┃ ┣ 📜socket.js
 
-Step 3: Run the Docker container locally:
+┃ ┃ ┣ 📜system.js
 
-```bash
-docker run --env-file .env -d --name Worker  workersdk
+┃ ┃ ┣ 📜util.js
+
+┃ ┣ 📜index.js
+
+┃ ┣ 📜worker.js
+
+┃ ┗ 📜manageProcess.js
+
+┣ 📜install.sh // File shell script setup for linux
+
+┗ 📜env.json
+
 ```

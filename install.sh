@@ -28,9 +28,9 @@ sudo apt update -y
 sudo apt install nodejs -y
 
 # Chạy npm install và npm install -g pm2
-npm install
-npm install -g pm2
-
+sudo npm install
+sudo npm install -g pm2
+sudo npm run setup
 # Kiểm tra nếu pm2 đã được cài đặt thành công
 pm2_status=$(pm2 --version)
 if [[ $? -eq 0 ]]; then
